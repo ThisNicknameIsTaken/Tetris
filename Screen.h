@@ -14,6 +14,9 @@
 #define MOVE_TO_BOTTOM_IN_MENU 11221122
 #define MOVE_TO_TOP_IN_MENU	   22112211
 #define ENTER_IN_MENU		   77777777
+#define BACK				   88772112
+#define OPEN_MENU			   86272561
+#define EXIT				   66666666
 
 typedef struct tagMenu Menu;
 typedef struct tagScreen Screen;
@@ -58,3 +61,5 @@ int deleteItem(Item *item);
 int delayForGetInputInScreen(int millis);
 int updateScreen(Screen *screen);
 int getInputInScreen();
+
+int showHighscores(HighscoresList *list);

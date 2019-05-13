@@ -3,21 +3,8 @@
 
 int GameState = GAME_PAUSED;
 
-void gameLoop(Field *field) {
-	/*
-	FILE *highscoresFile;
-	fopen_s(highscoresFile,"Highscore.json","r+");
-	int fileSize = fseek(highscoresFile,0l,SEEK_END) - fseek(highscoresFile,0l,SEEK_SET);
-	Highscores *highscores;
-
-	if (fileSize == 0) {
-		highscores = createHighscores(5);
-	}
-	else{
-		highscores = readHighscores(highscoresFile);
-	}
-	*/
-
+int gameLoop(Field *field) {
+	
 	int width = field->rows;
 	int height = field->cols;
 
@@ -42,19 +29,35 @@ void gameLoop(Field *field) {
 	
 	int score = 0;
 	int isGameOver = 0;
-	//fillFieldRowWithOne(field, 19);
-	//fillFieldRowWithOne(field, 18);
-	//fillFieldRowWithOne(field, 17);
-	//fillFieldRowWithOne(field, 16);
+	int isGameExit = 0;
 
-
-	//field->fieldArray[16][2] = 0;
 	while (INFINITY) {
 		if (GameState == GAME_OVER) {
+			deleteField(field);
+
+			if (currentFigure != NULL) {
+				deleteFigure(currentFigure);
+			}
+
+			if (nextFigure != NULL) {
+				deleteFigure(nextFigure);
+			}
 			system("cls");
-			printf("GAME OVER\nYOUR SCORE: %i\n", score);
-			system("pause");
-			return 1;
+			return score;
+		}
+
+		if (GameState == GAME_EXIT) {
+			deleteField(field);
+
+			if (currentFigure != NULL) {
+				deleteFigure(currentFigure);
+			}
+
+			if (nextFigure != NULL) {
+				deleteFigure(nextFigure);
+			}
+			system("cls");
+			return GAME_EXIT;
 		}
 
 		while (GameState == GAME_RUNNING) {
@@ -62,6 +65,12 @@ void gameLoop(Field *field) {
 
 			if (isGameOver == 1) {
 				GameState = GAME_OVER;
+				break;
+			}
+
+			if (isGameExit == 1) {
+				GameState = GAME_EXIT;
+				return GameState;
 				break;
 			}
 
@@ -87,8 +96,10 @@ void gameLoop(Field *field) {
 				nextFigure = genereteNextFigure(nextFigureX, nextFigureY);
 			}
 
-
-			delayAndMove(500, currentFigure, field, nextFigure, score);
+			
+			if (delayAndMove(500, currentFigure, field, nextFigure, score) == GAME_EXIT) {
+				isGameExit = 1;
+			}
 
 			checkLineRes = checkEndedLine(field);
 
@@ -100,14 +111,16 @@ void gameLoop(Field *field) {
 		
 	}
 
-
+	return score;
 }
 
 int startGame(int size) {
 	Field *field = createField(size);
 	GameState = GAME_RUNNING;
-	gameLoop(field);
-	return GameState;
+	int score;
+	score = gameLoop(field);
+	
+	return score;
 }
 
 int pauseGame() {
@@ -211,6 +224,10 @@ int getInput() {
 	if (c == 'q' || c == 'Q') {
 		return ROTATE_COUNTERCLOCKWISE;
 	}
+
+	if (c == 'b' || c == 'B') {
+		return GAME_EXIT;
+	}
 	return 0;
 }
 
@@ -248,6 +265,11 @@ int delayAndMove(int millis, Figure *figure, Field *field, Figure *nextFigure, i
 	while (clock() < startTime + millis) {
 		movementRes = getInput();
 		if (movementRes!= 0) {
+					
+				if (movementRes == GAME_EXIT) {
+					return movementRes;
+				}
+
 				if (movementRes == MOVE_TO_BOTTOM) {
 					dx = 0;
 					dy = 1;
@@ -347,6 +369,21 @@ int checkGameOver(Field * field)
 		if (field->fieldArray[1][x] == 1) return 1;
 	}
 	return 0;
+}
+
+Score *saveResult(int scoreNum) {
+	system("cls");
+	if (scoreNum <= 0) {
+		return NULL;
+	}
+	char name[256];
+	while (strlen(name) < 3) {
+		printf("Your score \x1b[31m%i\x1b[0m \n\n\n Please, input your name, min 3, max 255 letters:", scoreNum);
+		scanf_s("%s", &name,256);
+	}
+
+	Score *score = createScore(name, scoreNum);
+	return score;
 }
 
 void updateField(Field *field, Figure *currentFigure, Figure *nextFigure, int score) {

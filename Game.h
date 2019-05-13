@@ -8,6 +8,7 @@
 #define GAME_RUNNING 7700
 #define GAME_PAUSED  -8800
 #define GAME_OVER	 -6666
+#define GAME_EXIT    -6543
 
 #define INFINITY  77777
 
@@ -29,7 +30,7 @@
 #define TOUCH_ELEMENT 5555
 
 int startGame(int size);
-int saveResult();
+Score *saveResult(int scoreNum);
 int pauseGame();
 int continueGame();
 int pauseGame();
@@ -42,7 +43,7 @@ int delayAndMove(int millis, Figure *figure, Field *field, Figure *nextFigure, i
 int checkGameOver(Field *field);
 
 void updateField(Field *field, Figure *currentFigure, Figure *nextFigure, int score);
-void gameLoop(Field *field);
+int  gameLoop(Field *field);
 
 Figure *genereteNextFigure(int x, int y);
 

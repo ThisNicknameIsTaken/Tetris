@@ -6,7 +6,7 @@
 
 
 #define TOO_SMALL_NAME 8899887
-
+#define NO_HIGHSCORES  2433221
 
 typedef struct tagScore Score;
 typedef struct tagHighscoresList HighscoresList;
@@ -28,6 +28,7 @@ struct tagHighscoresList
 
 int	sortHighscores(HighscoresList *highscores);
 int printHighscores(HighscoresList *highscores);
+int printScore(Score *score);
 
 HighscoresList *readHighscores();
 

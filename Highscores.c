@@ -2,30 +2,87 @@
 
 
 
-int	sortHighscores(HighscoresList *highscores);
+int	sortHighscores(HighscoresList *highscores) {
+	if (highscores == NULL) {
+		return ERROR;
+	}
+
+	if (highscores->size <= 1) {
+		return OK;
+	}
+	Score *current;
+	Score *next;
+
+	int scoreNum = 0;
+	char *name;
+
+	int flag = 1;
+
+	while (flag == 1)
+	{
+		current = highscores->first;
+		next = current->next;
+		flag = 0;
+		while (next)
+		{
+			if ((current->score) < (next->score))
+			{
+				scoreNum = current->score;
+				name = current->name;
+
+				current->name = next->name;
+				current->score = next->score;
+
+				next->name = name;
+				next->score = scoreNum;
+				flag = 1;
+			}
+			current = current->next;
+			next = next->next;
+		}
+	}
+	return OK;
+}
 
 int printHighscores(HighscoresList *highscores) {
 	if (highscores == NULL || highscores->size <= 0) {
 		return ERROR;
 	}
 
+	sortHighscores(highscores);
+
 	Score *score = highscores->first;
 
 	while (score != highscores->last)
 	{
-		printf("%s : %i\n", score->name, score->score);
+		printScore(score);
 		score = score->next;
 	}
+	printScore(score);
+
+
+	return OK;
+}
+
+int printScore(Score *score) {
+	if (score == NULL) {
+		return ERROR;
+	}
 	printf("%s : %i\n", score->name, score->score);
-
-
 	return OK;
 }
 
 HighscoresList *readHighscores() {
 	FILE *file = NULL;
     fopen_s(&file, "Highscore.txt", "r+");
-	int fileSize = fseek(file,0l,SEEK_END) - fseek(file,0l,SEEK_SET);
+
+	fseek(file, 0l, SEEK_END);		
+	int fileSize = ftell(file);
+	fseek(file, 0l, SEEK_SET);
+
+	if (fileSize == 0) {
+		return NO_HIGHSCORES;
+	}
 
 	char *buffer = malloc(sizeof(char) * fileSize);
 	char *result;
@@ -33,34 +90,30 @@ HighscoresList *readHighscores() {
     fgets(buffer,fileSize,file);
 	fclose(file);
 
-	char *nextToken = NULL;
-
-	result = strtok_s(buffer, "\n", &nextToken);
-	result = strtok_s(result, " ",&nextToken);
-
 	HighscoresList *list = createHighscoreList();
 	Score *score = NULL;
+
+	char *nextToken = NULL;
+	char *delimeters = " ;";
+
+	result = strtok_s(buffer,delimeters,&nextToken);
 
 	char *name = NULL;
 	int scoreNum;
 
-	for (int i = 0; i < strlen(result); i++)
-	{
-		printf("%s\n",&result);
-	}
-
-
-	for (int i = 0; i < strlen(result); i++)
+	for (int i = 0; result != NULL; i++)
 	{	
 		if (i % 2 == 0) {
-			name = result[i];
+			name = result;
 		}
 		else {
-			scoreNum = atoi(result[i]);
-			score = createScore(name, score);
+			scoreNum = atoi(result);
+			score = createScore(name, scoreNum);
 			addHighsocreToList(score, list);
 		}
+		result = strtok_s(NULL, delimeters, &nextToken);
 	}
+
 
 	return list;
 }
@@ -83,6 +136,9 @@ int addHighsocreToList(Score *score, HighscoresList *highscoreList) {
 			score->next = NULL;
 		}
 		highscoreList->size++;
+
+		saveHighscoreList(highscoreList);
+
 		return OK;
 }
 
@@ -96,10 +152,10 @@ int saveHighscoreList(HighscoresList *highscorelist) {
 
 	Score *score = highscorelist->first;
 
-	while (score != highscorelist->last)
+	while (score != NULL)
 	{
 		fprintf(fp,"%s ",score->name);
-		fprintf(fp,"%i\n",score->score);
+		fprintf(fp,"%i; ",score->score);
 		score = score->next;
 	}
 
@@ -148,7 +204,7 @@ int deleteHighscoreList(HighscoresList *list) {
 
 	Score *score = list->first;
 	Score *tmp;
-	while (score != list->last);
+	while (score != list->last)
 	{
 		tmp = score->next;
 		deleteScore(score);
@@ -167,8 +223,6 @@ int deleteScore(Score *score) {
 	if (score == NULL) {
 		return ERROR;
 	}
-
-	free(score->name);
 	free(score);
 
 	return OK;

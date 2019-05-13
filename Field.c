@@ -40,20 +40,6 @@ int **createFieledArray(int size) {
 
 
 int	deleteField(Field *field) {
-
-	if (field->fieldArray != NULL) {
-		for (int i = 0; i < field->cols; i++)
-		{
-			for (int j = 0; j < field->rows; j++)
-			{
-				free(field->fieldArray[i][j]);
-			}
-		}
-	}
-
-	free(field->fieldArray);
-	free(field->cols);
-	free(field->rows);
 	free(field);
 	return OK;
 }

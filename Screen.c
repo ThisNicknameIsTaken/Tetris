@@ -116,6 +116,7 @@ int printScreen(Screen *screen, int selectedItem, int clicked)
 		return ERROR;
 	}
 
+	HighscoresList *resList = createHighscoreList();
 
 	char *selectedColor = "\x1b[31m";
 	char *resetCodeForColor = "\x1b[0m";
@@ -142,8 +143,31 @@ int printScreen(Screen *screen, int selectedItem, int clicked)
 					printf("%s%s%s",selectedColor, screen->menu->itemArray[menusItemsPrinted]->content,resetCodeForColor);
 					if (screen->menu->itemArray[menusItemsPrinted]->content == "START" && clicked == CLICKED) {
 						deleteScreen(screen);
-						startGame(20);
-						return;
+						int scoreNum = 0;
+						scoreNum = startGame(20);
+
+						if (scoreNum == GAME_EXIT) {
+							return OPEN_MENU;
+						}
+						Score *score = saveResult(scoreNum);
+						resList = readHighscores();
+
+
+						if (score != NULL){
+							addHighsocreToList(score, resList);
+						}
+
+					
+						return showHighscores(resList);
+					}
+					if (screen->menu->itemArray[menusItemsPrinted]->content == "HIGHSCORES" && clicked == CLICKED) {
+						deleteScreen(screen);
+						resList = readHighscores();
+						return showHighscores(resList);
+					}
+					if (screen->menu->itemArray[menusItemsPrinted]->content == "EXIT" && clicked == CLICKED) {
+						deleteScreen(screen);
+						return EXIT;
 					}
 				}
 				else {
@@ -233,9 +257,8 @@ int updateScreen(Screen *screen) {
 
 	while (transition == 0)
 	{
-		//system("cls");
-		printf("\e[1;1H\e[2J");
-
+	    system("cls");
+	
 		printScreen(screen, selectedItem, clicked);
 		input = delayForGetInputInScreen(200);
 
@@ -290,6 +313,10 @@ int getInputInScreen() {
 	if (c == 'y' || c == 'Y') {
 		return ENTER_IN_MENU;
 	}
+
+	if (c == 'b' || c == 'B') {
+		return BACK;
+	}
 	return 0;
 }
 
@@ -305,3 +332,16 @@ int delayForGetInputInScreen(int millis) {
 	return 0;
 }
 
+int showHighscores(HighscoresList *list) {
+	system("cls");
+	printf("Press b to exit to main menu\n");
+	printHighscores(list);
+	int resClick = 0;
+
+	while (resClick == 0) {
+		resClick = getInputInScreen();
+	}
+
+	deleteHighscoreList(list);
+	return OPEN_MENU;
+}
